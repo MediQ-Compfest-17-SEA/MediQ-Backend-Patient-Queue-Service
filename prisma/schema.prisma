@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model QueueHistory {
+  id            String   @id @default(uuid())
+  patientNik    String   // NIK pasien yang antre
+  patientName   String
+  institutionId String   // ID faskes (misal: 'rs-harapan-bunda')
+  serviceName   String   // Nama poli/layanan (misal: 'Poli Umum')
+  queueNumber   Int      // Nomor urut pasien
+  createdAt     DateTime @default(now())
+  calledAt      DateTime? // Waktu dipanggil
+  finishedAt    DateTime? // Waktu selesai
+  status        String   @default("WAITING") // WAITING, SERVING, FINISHED
+}
