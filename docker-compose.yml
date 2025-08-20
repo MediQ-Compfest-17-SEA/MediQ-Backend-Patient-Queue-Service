@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  patient-queue-service:
+    build: .
+    ports:
+      - "8605:8605"
+    environment:
+      - NODE_ENV=development
+      - PORT=8605
+      - DATABASE_URL=mysql://user:password@mysql:3306/patient_queue_service_dev
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - REDIS_URL=redis://redis:6379
+      - QUEUE_REDIS_DB=0
+      - CACHE_TTL=3600
+    depends_on:
+      - mysql
+      - redis
+      - rabbitmq
+    networks:
+      - mediq-network
+    healthcheck:
+      test: ["CMD", "node", "dist/health-check.js"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpassword
+      - MYSQL_DATABASE=patient_queue_service_dev
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - mediq-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - mediq-network
+    command: redis-server --appendonly yes
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - mediq-network
+
+volumes:
+  mysql_data:
+  redis_data:
+  rabbitmq_data:
+
+networks:
+  mediq-network:
+    driver: bridge

@@ -27,7 +27,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('Queue', 'Patient queue management endpoints')
     .addTag('Stats', 'Queue statistics and analytics endpoints')
-    .addServer(`http://localhost:${process.env.PORT || 3003}`, 'Development server')
+    .addServer(`http://localhost:${process.env.PORT || 8605}`, 'Development server')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -37,7 +37,7 @@ async function bootstrap() {
     },
   });
 
-  const port = process.env.PORT ?? 3003;
+  const port = process.env.PORT ?? 8605;
   await app.listen(port);
 
   console.log(`Patient Queue service is listening on port ${port}`);
