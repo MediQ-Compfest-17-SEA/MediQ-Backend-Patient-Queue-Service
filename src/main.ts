@@ -22,12 +22,25 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('MediQ Patient Queue Service API')
     .setDescription(
-      'API for managing patient queues in medical facilities. Handles patient registration, queue management, and queue status tracking with Redis caching.',
+      'Advanced mikroservice untuk manajemen antrian pasien dengan Redis caching, real-time WebSocket updates, dan intelligent queue management. Terintegrasi dengan notification system untuk live queue status updates.',
     )
-    .setVersion('1.0')
-    .addTag('Queue', 'Patient queue management endpoints')
-    .addTag('Stats', 'Queue statistics and analytics endpoints')
-    .addServer(`http://localhost:${process.env.PORT || 8605}`, 'Development server')
+    .setVersion('3.0')
+    .addTag('Queue', 'Queue management endpoints - Add, update, call patients dengan real-time notifications')
+    .addTag('Stats', 'Queue statistics dan analytics - Wait times, queue metrics, institutional analytics')
+    .addTag('health', 'Health check dan monitoring - Service status, Redis connectivity')
+    .addBearerAuth()
+    .setContact(
+      'MediQ Support',
+      'https://mediq.craftthingy.com',
+      'support@mediq.com'
+    )
+    .setLicense(
+      'MIT',
+      'https://opensource.org/licenses/MIT'
+    )
+    .addServer(`http://localhost:${process.env.PORT || 8605}`, 'Development Server')
+    .addServer('https://mediq-patient-queue-service.craftthingy.com', 'Production Server')
+    .setExternalDoc('MediQ Documentation', 'https://mediq.craftthingy.com/docs')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
