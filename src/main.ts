@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -50,10 +52,23 @@ async function bootstrap() {
     },
   });
 
+  // gRPC microservice (internal)
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: 'queue.v1',
+      protoPath: join(__dirname, '../shared/proto/queue.proto'),
+      url: process.env.QUEUE_GRPC_URL || '0.0.0.0:51055',
+    },
+  });
+
+  await app.startAllMicroservices();
+
   const port = process.env.PORT ?? 8605;
   await app.listen(port);
 
   console.log(`Patient Queue service is listening on port ${port}`);
   console.log(`Swagger documentation available at: http://localhost:${port}/api/docs`);
+  console.log(`gRPC server listening at ${process.env.QUEUE_GRPC_URL || '0.0.0.0:51055'}`);
 }
 bootstrap();
