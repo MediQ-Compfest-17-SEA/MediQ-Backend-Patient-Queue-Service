@@ -44,21 +44,17 @@ describe('QueueController', () => {
 
   describe('addToQueue', () => {
     it('should add patient to queue successfully', async () => {
-      const createQueueDto: CreatePatientQueueDto = {
+      const createQueueDto: any = {
         nik: '3171012345678901',
         nama: 'John Doe',
-        tempatLahir: 'Jakarta',
-        tanggalLahir: '1990-01-01',
-        jenisKelamin: 'Laki-laki',
+        tempat_lahir: 'Jakarta',
+        tgl_lahir: '1990-01-01',
+        jenis_kelamin: 'LAKI-LAKI',
         alamat: 'Jl. Test No. 123',
         agama: 'Islam',
-        statusPerkawinan: 'Belum Kawin',
-        pekerjaan: 'Software Engineer',
-        kewarganegaraan: 'WNI',
-        berlakuHingga: '2025-01-01',
         priority: Priority.NORMAL,
         keterangan: 'Kontrol rutin',
-      };
+      } as any;
 
       const mockResult = {
         success: true,
@@ -234,6 +230,30 @@ describe('QueueController', () => {
 
       expect(result).toEqual(mockResult);
       expect(mockQueueService.cancelQueue).toHaveBeenCalledWith(queueId);
+    });
+
+    it('should propagate NotFoundException when cancel fails', async () => {
+      const queueId = 'missing-id';
+      mockQueueService.cancelQueue.mockRejectedValue(new (require('@nestjs/common').NotFoundException)('Queue not found'));
+      await expect(controller.cancelQueue(queueId)).rejects.toBeInstanceOf(require('@nestjs/common').NotFoundException);
+    });
+  });
+
+  describe('negative branches (NotFound from service)', () => {
+    it('getNextInQueue propagates NotFoundException', async () => {
+      mockQueueService.getNextInQueue.mockRejectedValue(new (require('@nestjs/common').NotFoundException)('No patients in queue'));
+      await expect(controller.getNextInQueue()).rejects.toBeInstanceOf(require('@nestjs/common').NotFoundException);
+    });
+
+    it('getQueueById propagates NotFoundException', async () => {
+      mockQueueService.getQueueById.mockRejectedValue(new (require('@nestjs/common').NotFoundException)('Queue not found'));
+      await expect(controller.getQueueById('missing')).rejects.toBeInstanceOf(require('@nestjs/common').NotFoundException);
+    });
+
+    it('updateQueueStatus propagates NotFoundException', async () => {
+      mockQueueService.updateQueueStatus.mockRejectedValue(new (require('@nestjs/common').NotFoundException)('Queue not found'));
+      await expect(controller.updateQueueStatus('missing', { status: require('./dto/queue.dto').QueueStatus.CANCELLED } as any))
+        .rejects.toBeInstanceOf(require('@nestjs/common').NotFoundException);
     });
   });
 });
